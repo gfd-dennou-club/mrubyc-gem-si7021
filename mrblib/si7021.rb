@@ -1,3 +1,4 @@
+# coding: utf-8
 class Si7021
   ADDRESS = 0x40
   MEASRH_HOLD_CMD = 0xE5
@@ -33,7 +34,7 @@ class Si7021
   def begin
     reset()
     @i2c.write(Si7021::ADDRESS, Si7021::READRHT_REG_CMD)
-    if @i2c.read_integer(Si7021::ADDRESS, 1)[0] != 0x3A
+    if @i2c.readfrom(Si7021::ADDRESS, 1)[0] != 0x3A
       return false
     end
     true
@@ -47,21 +48,21 @@ class Si7021
   def read_temp
     @i2c.write(Si7021::ADDRESS, Si7021::MEASTEMP_NOHOLD_CMD)
     sleep(0.02)
-    buf = @i2c.read_integer(Si7021::ADDRESS, 2)
+    buf = @i2c.readfrom(Si7021::ADDRESS, 2)
     ((buf[0] << 8) | buf[1]) * 175.72 / 65_536 - 46.85
   end
 
   def read_humid
     @i2c.write(Si7021::ADDRESS, Si7021::MEASRH_NOHOLD_CMD)
     sleep(0.02)
-    buf = @i2c.read_integer(Si7021::ADDRESS, 2)
+    buf = @i2c.readfrom(Si7021::ADDRESS, 2)
     humid = ((buf[0] << 8) | buf[1]) * 125 / 65_536 - 6
     humid > 100.0 ? 100.0 : humid
   end
 
   def heater(sw)
     @i2c.write(Si7021::ADDRESS, Si7021::READRHT_REG_CMD)
-    reg_value = @i2c.read_integer(Si7021::ADDRESS, 1)[0]
+    reg_value = @i2c.readfrom(Si7021::ADDRESS, 1)[0]
     if sw
       reg_value |= (1 << (Si7021::REG_HTRE_BIT))
     else
@@ -73,7 +74,7 @@ class Si7021
 
   def heater_status
     @i2c.write(Si7021::ADDRESS, Si7021::READRHT_REG_CMD)
-    reg_value = @i2c.read_integer(Si7021::ADDRESS, 1)[0]
+    reg_value = @i2c.readfrom(Si7021::ADDRESS, 1)[0]
     ((reg_value >> (Si7021::REG_HTRE_BIT)) & 1) == 1 ? true : false
   end
 
